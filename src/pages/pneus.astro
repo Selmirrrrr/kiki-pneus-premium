@@ -1,0 +1,214 @@
+---
+import ArrowRight from '@lucide/astro/icons/arrow-right';
+import Search from '@lucide/astro/icons/search';
+import Snowflake from '@lucide/astro/icons/snowflake';
+import Sun from '@lucide/astro/icons/sun';
+import azote from '../assets/services/azote.png';
+import chaines from '../assets/services/chaines.png';
+import pneus from '../assets/services/pneus.png';
+import pneus2 from '../assets/services/pneus-2.png';
+import CtaBand from '../components/CtaBand.astro';
+import Feature from '../components/Feature.astro';
+import PageHero from '../components/PageHero.astro';
+import { chf, storage } from '../data/tarifs';
+import Base from '../layouts/Base.astro';
+import { link } from '../lib/url';
+
+const sections = [
+  { id: 'ete-hiver', label: 'Pneus été / hiver' },
+  { id: 'garantie', label: 'Garantie' },
+  { id: 'stockage', label: 'Stockage / Gardiennage' },
+  { id: 'azote', label: 'Azote' },
+  { id: 'chaines', label: 'Chaînes à neige' },
+];
+---
+
+<Base
+  title="Pneus été et hiver, garantie, gardiennage"
+  description="Pneus toutes marques à Yverdon-les-Bains : changement été/hiver, garantie crevaison 3 ans, gardiennage de plus de 5000 roues, gonflage à l'azote et chaînes à neige."
+>
+  <PageHero
+    title="Pneus"
+    intro="En été comme en hiver, il est primordial d’équiper votre véhicule de pneus adaptés à chaque saison. C’est une condition essentielle pour rouler en toute sécurité."
+    image={pneus}
+    {sections}
+  >
+    <div class="hero-links">
+      <a class="btn" href={link('/catalogue')}><Search aria-hidden="true" /> Catalogue pneus</a>
+      <a class="btn btn--ghost" href={link('/tarifs')}>Tarifs de montage <ArrowRight aria-hidden="true" /></a>
+    </div>
+  </PageHero>
+
+  <div class="container">
+    <Feature id="ete-hiver" index={1} title="Pneus été hiver" image={pneus2}>
+      <p>
+        Lors du changement de saison, il convient de remplacer les pneus de votre voiture. La composition de la gomme est
+        différente selon qu’il s’agit d’un pneu d’été ou d’un pneu d’hiver, à cause des différences de température de la
+        route.
+      </p>
+      <div class="compare">
+        <div class="compare__item compare__item--winter">
+          <Snowflake aria-hidden="true" />
+          <strong>Sous 7 °C</strong>
+          <span>Une gomme plus tendre : jusqu’à 1,5 m gagné lors d’un freinage à 50 km/h.</span>
+        </div>
+        <div class="compare__item">
+          <Sun aria-hidden="true" />
+          <strong>Au-dessus de 7 °C</strong>
+          <span>Une gomme plus dure est nécessaire sur un revêtement plus tempéré.</span>
+        </div>
+      </div>
+    </Feature>
+
+    <Feature id="garantie" index={2} title="Garantie de pneus" reverse>
+      <p>
+        Chez Kiki-Pneus, tous les pneus de toutes marques sont garantis <strong>3 ans en cas de crevaison</strong>. Le
+        pneu sera remplacé dans les plus brefs délais, seul le montage vous sera facturé.
+      </p>
+      <div slot="aside" class="big-stat">
+        <span class="big-stat__value">3<small>ans</small></span>
+        <span class="big-stat__label">de garantie crevaison, toutes marques</span>
+      </div>
+    </Feature>
+
+    <Feature id="stockage" index={3} title="Stockage / Gardiennage">
+      <p>
+        Pour vous éviter de transporter vos pneus, nous vous proposons de stocker vos roues chez nous. Nous stockons plus
+        de 5000 roues et en assurons le suivi.
+      </p>
+      <ul class="price-list">
+        {
+          storage.map((g) => (
+            <li>
+              <span>{g.label}</span>
+              <strong>{chf(g.price)}</strong>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="price-note">Par saison, TVA incluse.</p>
+      <div slot="aside" class="big-stat">
+        <span class="big-stat__value">5000<small>+</small></span>
+        <span class="big-stat__label">roues stockées et suivies</span>
+      </div>
+    </Feature>
+
+    <Feature id="azote" index={4} title="Azote" image={azote} imageAlt="Gonflage des pneus à l'azote" reverse>
+      <p>
+        L’azote réduit la consommation de carburant et prolonge la durée de vie des pneus. Les pneus remplis d’azote sont
+        gonflés moins fréquemment : la pression prescrite est maintenue, ce qui réduit le risque d’éclatement à grande
+        vitesse.
+      </p>
+      <p>Une technologie reprise du sport automobile et du trafic aérien.</p>
+    </Feature>
+
+    <Feature id="chaines" index={5} title="Chaînes à neige" image={chaines} imageAlt="Chaînes à neige">
+      <p>
+        Les chaînes sont obligatoires sur certaines routes alpines en Suisse et chez la plupart de nos voisins. Il est donc
+        recommandé d’avoir dans son véhicule des chaînes à neige qui vous permettront de ne pas rester bloqué sur le bord de
+        la route.
+      </p>
+    </Feature>
+  </div>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 28px;
+    margin-top: 40px;
+  }
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 36px;
+    border-top: 1px solid var(--hair);
+  }
+  .compare__item {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: 26px 24px 4px 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  .compare__item + .compare__item {
+    padding-left: 28px;
+    border-left: 1px solid var(--hair);
+  }
+  .compare__item :global(svg) {
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.3;
+    color: var(--copper);
+  }
+  .compare__item strong {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.9rem;
+    line-height: 1.1;
+  }
+  .big-stat {
+    display: grid;
+    gap: 18px;
+    text-align: center;
+  }
+  .big-stat__value {
+    font-family: var(--serif);
+    font-size: clamp(7rem, 15vw, 12rem);
+    line-height: 0.8;
+    letter-spacing: -0.03em;
+    color: var(--ivory);
+  }
+  .big-stat__value small {
+    margin-left: 10px;
+    font-size: 0.3em;
+    font-style: italic;
+    letter-spacing: 0;
+    color: var(--copper);
+  }
+  .big-stat__label {
+    font-size: 0.74rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .price-list {
+    max-width: 440px;
+    margin: 32px 0 10px;
+    padding: 0 !important;
+    list-style: none;
+    border-top: 1px solid var(--hair);
+  }
+  .price-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .price-list strong {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.45rem;
+  }
+  .price-note {
+    font-size: 0.85rem;
+    color: var(--stone);
+  }
+  @media (max-width: 520px) {
+    .compare {
+      grid-template-columns: 1fr;
+    }
+    .compare__item + .compare__item {
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid var(--hair);
+    }
+  }
+</style>

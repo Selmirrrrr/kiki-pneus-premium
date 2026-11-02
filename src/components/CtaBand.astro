@@ -1,0 +1,96 @@
+---
+import ArrowRight from '@lucide/astro/icons/arrow-right';
+import { agencies } from '../data/site';
+
+interface Props {
+  title?: string;
+  text?: string;
+}
+
+const {
+  title = 'Nous sommes là pour vous aider',
+  text = "Besoin d'aide pour choisir les bons produits pour votre véhicule ? Notre équipe d'experts possède les connaissances nécessaires pour vous conseiller. Appelez-nous ou écrivez-nous : nous aimons résoudre les problèmes et donner un coup de main.",
+} = Astro.props;
+---
+
+<section class="cta light">
+  <div class="container cta__inner">
+    <div class="cta__text reveal">
+      <p class="label">Conseil</p>
+      <h2>{title}</h2>
+      <p class="lead">{text}</p>
+      <button class="btn btn--ink" popovertarget="rdv">Prendre rendez-vous <ArrowRight aria-hidden="true" /></button>
+    </div>
+    <ul class="cta__contacts reveal" style="--delay: .12s">
+      {
+        agencies.map((a) => (
+          <li>
+            <span class="cta__agency">{a.short}</span>
+            <a class="cta__phone" href={a.phoneHref}>
+              {a.phone}
+            </a>
+            <a class="cta__mail" href={`mailto:${a.email}`}>
+              {a.email}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: clamp(88px, 11vw, 152px);
+  }
+  .cta__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    align-items: end;
+    gap: clamp(48px, 7vw, 120px);
+  }
+  .cta h2 {
+    font-size: clamp(2.8rem, 6vw, 5.2rem);
+    margin-bottom: 28px;
+  }
+  .cta .lead {
+    margin-bottom: 36px;
+  }
+  .cta__contacts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--paper-hair);
+  }
+  .cta__contacts li {
+    display: grid;
+    gap: 2px;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--paper-hair);
+  }
+  .cta__agency {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+  .cta__phone {
+    font-family: var(--serif);
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    line-height: 1.1;
+    color: var(--paper-ink);
+    transition: color 0.3s;
+  }
+  .cta__phone:hover {
+    color: var(--copper-ink);
+  }
+  .cta__mail:hover {
+    color: var(--paper-ink);
+  }
+
+  @media (max-width: 900px) {
+    .cta__inner {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

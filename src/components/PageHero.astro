@@ -1,0 +1,171 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { link } from '../lib/url';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  intro: string;
+  image?: ImageMetadata;
+  imageAlt?: string;
+  /** Ancres de la page, affichées en barre de navigation collante sous le hero. */
+  sections?: { id: string; label: string }[];
+}
+
+const { eyebrow = 'Prestations', title, intro, image, imageAlt = '', sections = [] } = Astro.props;
+---
+
+<section class:list={['page-hero', { 'page-hero--media': image }]}>
+  <div class="container page-hero__inner">
+    <div class="page-hero__text">
+      <nav class="crumbs" aria-label="Fil d'Ariane">
+        <a href={link('/')}>Accueil</a>
+        <span aria-hidden="true">—</span>
+        <span aria-current="page">{title}</span>
+      </nav>
+      <p class="label">{eyebrow}</p>
+      <h1>{title}</h1>
+      <p class="lead">{intro}</p>
+      <slot />
+    </div>
+    {
+      image && (
+        <div class="page-hero__visual spotlight">
+          <Image src={image} alt={imageAlt} widths={[360, 560, 760]} sizes="(max-width: 900px) 70vw, 480px" loading="eager" />
+          <div class="page-hero__floor" aria-hidden="true" />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+{
+  sections.length > 0 && (
+    <nav class="subnav" aria-label="Sur cette page">
+      <div class="container">
+        <ol>
+          {sections.map((s, i) => (
+            <li>
+              <a href={`#${s.id}`}>
+                <span>{String(i + 1).padStart(2, '0')}</span>
+                {s.label}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </nav>
+  )
+}
+
+<style>
+  .page-hero {
+    position: relative;
+    padding-block: clamp(64px, 9vw, 128px) clamp(64px, 8vw, 112px);
+    overflow: hidden;
+    background: radial-gradient(80% 120% at 85% 0%, rgba(228, 104, 63, 0.09), transparent 60%), var(--ink);
+  }
+  .page-hero__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 56px;
+  }
+  .page-hero--media .page-hero__inner {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+  .page-hero__text {
+    max-width: 880px;
+    animation: rise 1.2s var(--ease) both;
+  }
+  .page-hero h1 {
+    margin-bottom: 28px;
+  }
+  .crumbs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 48px;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--stone);
+  }
+  .crumbs a:hover {
+    color: var(--ivory);
+  }
+  .page-hero__visual {
+    display: grid;
+    place-items: center;
+    animation: rise 1.4s 0.15s var(--ease) both;
+  }
+  .page-hero__visual :global(img) {
+    position: relative;
+    width: min(86%, 440px);
+    filter: drop-shadow(0 40px 50px rgba(0, 0, 0, 0.7));
+  }
+  /* sol réfléchissant sous le produit */
+  .page-hero__floor {
+    width: 70%;
+    height: 24px;
+    margin-top: -6px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.8), transparent);
+  }
+
+  .subnav {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 40;
+    border-block: 1px solid var(--hair);
+    background: rgba(12, 12, 13, 0.86);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .subnav ol {
+    display: flex;
+    gap: 36px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .subnav a {
+    display: flex;
+    gap: 10px;
+    padding: 18px 0;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ivory-dim);
+    border-bottom: 1px solid transparent;
+    transition:
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .subnav a span {
+    color: var(--stone);
+  }
+  .subnav a:hover {
+    color: var(--ivory);
+    border-color: var(--copper);
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .page-hero--media .page-hero__inner {
+      grid-template-columns: 1fr;
+    }
+    .page-hero__visual {
+      max-width: 360px;
+      margin-inline: auto;
+    }
+  }
+</style>

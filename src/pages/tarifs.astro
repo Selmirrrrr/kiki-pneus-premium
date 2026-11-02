@@ -1,0 +1,650 @@
+---
+import ArrowRight from '@lucide/astro/icons/arrow-right';
+import ChevronDown from '@lucide/astro/icons/chevron-down';
+import CtaBand from '../components/CtaBand.astro';
+import PageHero from '../components/PageHero.astro';
+import { chf, estimate, extras, geometrie, services, storage, tarifsMeta, vehicles } from '../data/tarifs';
+import Base from '../layouts/Base.astro';
+import { link } from '../lib/url';
+
+const initial = estimate({ vehicle: vehicles[0].id, rim: '', service: services[0].id, storage: '' });
+const note = `Prix des prestations TVA ${tarifsMeta.vat} incluse, hors fourniture des pneus. Valables dès ${tarifsMeta.validFrom}.`;
+---
+
+<Base
+  title="Tarifs et estimation du changement de roues"
+  description={`Estimez en quelques clics le prix de votre changement de roues chez Kiki Pneus SA à Yverdon-les-Bains : montage, équilibrage, valves et gardiennage. Prix en CHF, TVA ${tarifsMeta.vat} incluse.`}
+>
+  <PageHero
+    eyebrow="Prix transparents"
+    title="Tarifs"
+    intro={`Choisissez votre véhicule, vos jantes et la prestation : le prix s’affiche immédiatement. En CHF, TVA ${tarifsMeta.vat} incluse, valables dès ${tarifsMeta.validFrom}.`}
+  />
+
+  <section class="section">
+    <div class="container">
+      <h2 class="title">Combien coûte votre changement de <em>roues</em> ?</h2>
+
+      <form class="estimator" aria-label="Estimation du prix">
+        <div class="steps">
+          <fieldset class="step">
+            <legend>
+              <span class="step__head"><span class="step__num" aria-hidden="true">01</span><span><small>Étape 1</small>Type de véhicule</span></span>
+            </legend>
+            <div class="choices">
+              {
+                vehicles.map((v, i) => (
+                  <label class="choice">
+                    <input type="radio" name="vehicle" value={v.id} checked={i === 0} />
+                    <span>{v.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend>
+              <span class="step__head"><span class="step__num" aria-hidden="true">02</span><span><small>Étape 2</small>Vos jantes</span></span>
+            </legend>
+            <div class="choices">
+              {
+                vehicles.map((v) =>
+                  v.rims.map((r, i) => (
+                    <label class="choice" data-vehicle={v.id} hidden={v.id !== initial.vehicle}>
+                      <input type="radio" name="rim" value={`${v.id}:${r.id}`} checked={v.id === initial.vehicle && i === 0} />
+                      <span>{r.label}</span>
+                    </label>
+                  )),
+                )
+              }
+            </div>
+            <p class="step__hint" data-alu-hint>Tarifs pour jantes en aluminium.</p>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend>
+              <span class="step__head"><span class="step__num" aria-hidden="true">03</span><span><small>Étape 3</small>Prestation</span></span>
+            </legend>
+            <div class="choices">
+              {
+                services.map((s, i) => (
+                  <label class="choice">
+                    <input type="radio" name="service" value={s.id} checked={i === 0} />
+                    <span>{s.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend>
+              <span class="step__head"><span class="step__num step__num--opt" aria-hidden="true">+</span><span><small>Option</small>Gardiennage pour une saison</span></span>
+            </legend>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="storage" value="" checked />
+                <span>Sans gardiennage</span>
+              </label>
+              {
+                storage.map((s) => (
+                  <label class="choice">
+                    <input type="radio" name="storage" value={s.id} />
+                    <span>
+                      {s.label} <small>{chf(s.price)}</small>
+                    </span>
+                  </label>
+                ))
+              }
+            </div>
+            <p class="step__hint">Nous stockons vos roues entre deux saisons et en assurons le suivi.</p>
+          </fieldset>
+        </div>
+
+        <aside class="estimate" id="estimation" aria-labelledby="estimate-title">
+          <p class="label" id="estimate-title">Votre estimation</p>
+          <p class="estimate__total" aria-live="polite">
+            <span class="estimate__currency">CHF</span>
+            <span data-total>{initial.total.toFixed(2)}</span>
+          </p>
+          <ul class="estimate__lines" data-lines>
+            {
+              initial.lines.map((l) => (
+                <li>
+                  <span>{l.label}</span>
+                  <strong>{chf(l.price)}</strong>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="estimate__note">{note}</p>
+          <div class="estimate__actions">
+            <button class="btn" type="button" popovertarget="rdv">Prendre rendez-vous</button>
+            <a class="link" href={link('/catalogue')}>Choisir des pneus <ArrowRight aria-hidden="true" /></a>
+          </div>
+        </aside>
+      </form>
+    </div>
+  </section>
+
+  <div class="estimate-bar" data-bar aria-hidden="true">
+    <span class="estimate-bar__label">Estimation</span>
+    <strong>CHF <span data-total-bar>{initial.total.toFixed(2)}</span></strong>
+    <a class="btn btn--sm" href="#estimation" tabindex="-1">Détail</a>
+  </div>
+
+  <section class="section--tight others">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Autres prestations</p>
+        <h2>Et aussi</h2>
+      </div>
+      <ul class="others__grid">
+        <li class="other other--geo">
+          <span class="other__label">{geometrie.label}</span>
+          <span class="other__price">{geometrie.from && <small>dès</small>}{chf(geometrie.price)}</span>
+          <a class="link" href={link('/geometrie')}>En savoir plus <ArrowRight aria-hidden="true" /></a>
+        </li>
+        {
+          extras.map((e) => (
+            <li class="other">
+              <span class="other__label">{e.label}</span>
+              <span class="other__price">{chf(e.price)}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <details class="grid-full">
+        <summary>Voir la grille complète des tarifs <ChevronDown aria-hidden="true" /></summary>
+        <div class="grid-full__tables">
+          {
+            vehicles.map((v) => (
+              <table>
+                <caption>{v.label}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Jantes</th>
+                    {services.map((s) => (
+                      <th scope="col">{s.label}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {v.rims.map((r) => (
+                    <tr>
+                      <th scope="row">{r.label}</th>
+                      {services.map((s) => (
+                        <td>{chf(s.prices[v.id][r.id])}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ))
+          }
+        </div>
+        <p class="estimate__note plain">{note}</p>
+      </details>
+    </div>
+  </section>
+
+  <CtaBand
+    title="Une question sur un tarif ?"
+    text="Pour une offre sur des pneus ou des jantes, ou pour toute question sur nos prestations, contactez l’une de nos deux agences."
+  />
+</Base>
+
+<script>
+  import { chf, estimate } from '../data/tarifs';
+
+  const form = document.querySelector<HTMLFormElement>('.estimator')!;
+  const total = form.querySelector<HTMLElement>('[data-total]')!;
+  const lines = form.querySelector<HTMLUListElement>('[data-lines]')!;
+  const aluHint = form.querySelector<HTMLElement>('[data-alu-hint]')!;
+  const bar = document.querySelector<HTMLElement>('[data-bar]')!;
+  const barTotal = bar.querySelector<HTMLElement>('[data-total-bar]')!;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+  const value = (name: string) => (form.elements.namedItem(name) as RadioNodeList).value;
+  let shown = Number(total.textContent);
+  let frame = 0;
+
+  const animateTotal = (target: number) => {
+    cancelAnimationFrame(frame);
+    barTotal.textContent = target.toFixed(2);
+    if (reduceMotion.matches) {
+      total.textContent = target.toFixed(2);
+      shown = target;
+      return;
+    }
+    const from = shown;
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / 350);
+      shown = from + (target - from) * (1 - (1 - t) ** 3);
+      total.textContent = shown.toFixed(2);
+      if (t < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+  };
+
+  const update = () => {
+    const vehicle = value('vehicle');
+    // la taille est conservée si elle existe pour le nouveau véhicule (ex. 21″ SUV → 21″ tourisme)
+    const rimId = value('rim').split(':')[1];
+    const result = estimate({
+      vehicle,
+      rim: rimId,
+      service: value('service'),
+      storage: value('storage'),
+    });
+
+    // n'afficher que les jantes du véhicule choisi, et garder une sélection valide
+    form.querySelectorAll<HTMLElement>('[data-vehicle]').forEach((el) => (el.hidden = el.dataset.vehicle !== vehicle));
+    form.querySelector<HTMLInputElement>(`input[name=rim][value="${vehicle}:${result.rim}"]`)!.checked = true;
+    aluHint.hidden = vehicle === 'camionnettes';
+
+    lines.replaceChildren(
+      ...result.lines.map((l) => {
+        const li = document.createElement('li');
+        const label = document.createElement('span');
+        const price = document.createElement('strong');
+        label.textContent = l.label;
+        price.textContent = chf(l.price);
+        li.append(label, price);
+        return li;
+      }),
+    );
+    animateTotal(result.total);
+  };
+
+  form.addEventListener('change', update);
+  form.addEventListener('submit', (e) => e.preventDefault());
+
+  // Mobile : barre de total visible pendant le choix, masquée quand le détail est à l'écran
+  let stepsVisible = false;
+  let panelVisible = false;
+  const syncBar = () => bar.classList.toggle('is-visible', stepsVisible && !panelVisible);
+  new IntersectionObserver(([e]) => ((stepsVisible = e.isIntersecting), syncBar())).observe(form.querySelector('.steps')!);
+  new IntersectionObserver(([e]) => ((panelVisible = e.isIntersecting), syncBar())).observe(form.querySelector('.estimate')!);
+</script>
+
+<style>
+  .title {
+    max-width: 18ch;
+    margin-bottom: clamp(48px, 6vw, 88px);
+  }
+
+  .estimator {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: clamp(40px, 6vw, 96px);
+    align-items: start;
+  }
+  .steps {
+    border-top: 1px solid var(--hair);
+  }
+  .step {
+    min-inline-size: 0;
+    margin: 0;
+    padding: clamp(32px, 4vw, 48px) 0;
+    border: 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .step legend {
+    float: left;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 24px;
+  }
+  .step legend + * {
+    clear: both;
+  }
+  .step__head {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    font-family: var(--serif);
+    font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+    line-height: 1.05;
+    color: var(--ivory);
+  }
+  .step__head small {
+    display: block;
+    margin-bottom: 8px;
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .step__num {
+    flex: none;
+    width: 2.4em;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    color: var(--copper);
+  }
+  .step__num--opt {
+    font-size: 1.1rem;
+  }
+  .step__hint {
+    margin: 16px 0 0;
+    font-size: 0.88rem;
+    color: var(--stone);
+  }
+  .step__hint[hidden] {
+    display: none;
+  }
+
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .choice {
+    position: relative;
+  }
+  .choice[hidden] {
+    display: none;
+  }
+  .choice input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .choice span {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 24px;
+    border: 1px solid var(--hair-strong);
+    border-radius: 999px;
+    font-size: 0.98rem;
+    color: var(--ivory-dim);
+    transition:
+      background-color 0.4s var(--ease),
+      border-color 0.4s var(--ease),
+      color 0.3s;
+  }
+  .choice small {
+    font-size: 0.85rem;
+    color: var(--stone);
+    transition: color 0.3s;
+  }
+  .choice:hover span {
+    border-color: var(--ivory);
+    color: var(--ivory);
+  }
+  .choice input:checked + span {
+    background: var(--ivory);
+    border-color: var(--ivory);
+    color: var(--ink);
+  }
+  .choice input:checked + span small {
+    color: var(--copper-ink);
+  }
+  .choice input:focus-visible + span {
+    outline: 1px solid var(--copper);
+    outline-offset: 4px;
+  }
+
+  .estimate {
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+    padding: clamp(32px, 4vw, 52px);
+    border: 1px solid var(--hair-strong);
+    border-radius: var(--radius-lg);
+    background: radial-gradient(ellipse 70% 50% at 100% 0%, rgba(228, 104, 63, 0.14), transparent 70%), var(--ink-2);
+  }
+  .estimate__total {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 8px 0 36px;
+    font-family: var(--serif);
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+  .estimate__currency {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    letter-spacing: 0.24em;
+    color: var(--copper);
+  }
+  .estimate__total [data-total] {
+    font-size: clamp(4rem, 7.5vw, 6.4rem);
+    letter-spacing: -0.02em;
+    color: var(--ivory);
+  }
+  .estimate__lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* les lignes sont recréées par le script : styles globaux à ce conteneur */
+  .estimate__lines :global(li) {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding: 16px 0;
+    border-top: 1px solid var(--hair);
+    font-size: 0.95rem;
+    animation: line-in 0.5s var(--ease);
+  }
+  .estimate__lines :global(strong) {
+    flex: none;
+    font-weight: 500;
+    color: var(--ivory);
+  }
+  .estimate__note {
+    margin: 0 0 32px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hair);
+    font-size: 0.82rem;
+    color: var(--stone);
+  }
+  .estimate__note.plain {
+    margin: 20px 0 0;
+    padding: 0;
+    border: 0;
+  }
+  .estimate__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px 28px;
+  }
+
+  .estimate-bar {
+    display: none;
+  }
+
+  .others {
+    border-top: 1px solid var(--hair);
+  }
+  .others__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--hair);
+    border-left: 1px solid var(--hair);
+  }
+  .other {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: clamp(28px, 3vw, 40px);
+    border-right: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+  }
+  .other__label {
+    font-size: 0.74rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .other__price {
+    font-family: var(--serif);
+    font-size: clamp(2.4rem, 3.6vw, 3.2rem);
+    line-height: 1;
+    color: var(--ivory);
+  }
+  .other__price small {
+    margin-right: 10px;
+    font-size: 0.45em;
+    font-style: italic;
+    color: var(--copper);
+  }
+  .other .link {
+    align-self: flex-start;
+    margin-top: auto;
+  }
+
+  .grid-full {
+    margin-top: 40px;
+  }
+  .grid-full summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ivory);
+    cursor: pointer;
+    list-style: none;
+  }
+  .grid-full summary::-webkit-details-marker {
+    display: none;
+  }
+  .grid-full summary :global(svg) {
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.4;
+    transition: transform 0.5s var(--ease);
+  }
+  .grid-full[open] summary :global(svg) {
+    transform: rotate(180deg);
+  }
+  .grid-full__tables {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px;
+    margin-top: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  caption {
+    padding-bottom: 14px;
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    text-align: left;
+    color: var(--ivory);
+  }
+  th,
+  td {
+    padding: 12px 12px 12px 0;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--hair);
+  }
+  thead th {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--stone);
+    border-top: 1px solid var(--hair);
+  }
+  tbody th {
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  td {
+    white-space: nowrap;
+    color: var(--ivory);
+  }
+
+  @keyframes line-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+
+  @media (max-width: 980px) {
+    .estimator {
+      grid-template-columns: 1fr;
+    }
+    .estimate {
+      position: static;
+    }
+    .estimate-bar {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 45;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 10px 10px 22px;
+      border: 1px solid var(--hair-strong);
+      border-radius: 999px;
+      background: rgba(19, 19, 20, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transform: translateY(160%);
+      transition: transform 0.6s var(--ease);
+    }
+    .estimate-bar.is-visible {
+      transform: none;
+    }
+    .estimate-bar__label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--stone);
+    }
+    .estimate-bar strong {
+      margin-right: auto;
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 1.7rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .others__grid,
+    .grid-full__tables {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .choice span {
+      min-height: 48px;
+      padding: 0 18px;
+      font-size: 0.92rem;
+    }
+    .step__head {
+      gap: 14px;
+    }
+    .step__num {
+      width: 1.8em;
+    }
+  }
+</style>

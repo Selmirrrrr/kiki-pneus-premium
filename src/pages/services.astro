@@ -1,0 +1,203 @@
+---
+import { Image } from 'astro:assets';
+import Battery from '@lucide/astro/icons/battery';
+import CarFront from '@lucide/astro/icons/car-front';
+import CircleStop from '@lucide/astro/icons/circle-stop';
+import ClipboardCheck from '@lucide/astro/icons/clipboard-check';
+import Droplets from '@lucide/astro/icons/droplets';
+import Gauge from '@lucide/astro/icons/gauge';
+import Sparkles from '@lucide/astro/icons/sparkles';
+import Wind from '@lucide/astro/icons/wind';
+import climatisation from '../assets/services/climatisation.png';
+import tpms from '../assets/services/tpms.png';
+import CtaBand from '../components/CtaBand.astro';
+import PageHero from '../components/PageHero.astro';
+import { chf, extras } from '../data/tarifs';
+import Base from '../layouts/Base.astro';
+
+const tpmsPrice = extras.find((d) => d.label.includes('TPMS'));
+
+const services = [
+  {
+    id: 'tpms',
+    icon: Gauge,
+    title: 'Capteur TPMS',
+    image: tpms,
+    text: 'Le TPMS est un système électronique qui surveille la pression des pneus et avertit le conducteur en cas de changement, via un écran ou un témoin lumineux sur le tableau de bord. Une bonne pression prolonge la durée de vie des pneus, réduit la consommation de carburant et augmente la sécurité.',
+    price: tpmsPrice && `${tpmsPrice.label} : ${chf(tpmsPrice.price)}`,
+  },
+  {
+    id: 'climatisation',
+    icon: Wind,
+    title: 'Climatisation',
+    image: climatisation,
+    text: 'Une climatisation en bon état est indispensable pour une conduite agréable : elle garde la fraîcheur dans votre véhicule, évite la formation de buée et les infiltrations de pollens. Il est recommandé de la faire contrôler et désinfecter une fois par an.',
+  },
+  {
+    id: 'freins',
+    icon: CircleStop,
+    title: 'Freins',
+    text: 'Il est très important de garder vos freins en parfait état de fonctionnement. Ne négligez jamais le moindre grincement ou petit bruit qui survient lorsque vous freinez.',
+  },
+  {
+    id: 'vidange',
+    icon: Droplets,
+    title: 'Vidange',
+    text: 'Vidange moteur, réglage des phares et tout type d’entretien courant de votre véhicule.',
+  },
+  {
+    id: 'lavage',
+    icon: Sparkles,
+    title: 'Lavage des roues',
+    text: 'Nous sommes équipés d’une machine à micro-billes qui lave vos roues de manière 100 % naturelle. La combinaison de la technologie et de l’expertise vous garantit un résultat idéal pour des roues comme neuves.',
+  },
+  {
+    id: 'nettoyage',
+    icon: CarFront,
+    title: 'Nettoyage auto',
+    text: 'Nous prenons aussi soin de la propreté de votre véhicule. Renseignez-vous auprès de nos agences sur les prestations de nettoyage proposées.',
+  },
+  {
+    id: 'expertise',
+    icon: ClipboardCheck,
+    title: 'Préparation expertise',
+    text: 'Nos techniciens sont des experts dans ce domaine et savent ce qu’il faut faire pour que votre voiture soit prête pour le jour J.',
+  },
+  {
+    id: 'batterie',
+    icon: Battery,
+    title: 'Service batterie',
+    text: 'Évitez de vous retrouver en panne : faites contrôler votre batterie. Si quelque chose ne fonctionne pas comme il se doit, nous en trouverons la cause et vous proposerons des solutions.',
+  },
+];
+---
+
+<Base
+  title="Services auto : TPMS, climatisation, freins, vidange"
+  description="Entretien automobile à Yverdon-les-Bains : capteurs TPMS, climatisation, freins, vidange, lavage des roues, préparation à l'expertise et service batterie."
+>
+  <PageHero
+    eyebrow="Entretien"
+    title="Services auto"
+    intro="Au-delà des pneus, nous prenons soin de tout votre véhicule : vidange moteur, freins, climatisation, préparation à l’expertise, réglage des phares ainsi que tout type d’entretien."
+    sections={services.map((s) => ({ id: s.id, label: s.title }))}
+  />
+
+  <section class="section">
+    <div class="container">
+      <ul class="grid">
+        {
+          services.map((s, i) => (
+            <li id={s.id} class:list={['card reveal', { 'card--media': s.image }]} style={`--delay: ${(i % 2) * 0.08}s`}>
+              <div class="card__body">
+                <div class="card__head">
+                  <s.icon class="card__icon" aria-hidden="true" />
+                  <span class="card__num">{String(i + 1).padStart(2, '0')}</span>
+                </div>
+                <h2>{s.title}</h2>
+                <p>{s.text}</p>
+                {s.price && <p class="card__price">{s.price}</p>}
+              </div>
+              {s.image && (
+                <div class="card__media">
+                  <Image src={s.image} alt="" widths={[240, 420]} sizes="(max-width: 700px) 80vw, 260px" />
+                </div>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--hair);
+    border-left: 1px solid var(--hair);
+  }
+  .card {
+    display: grid;
+    border-right: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    scroll-margin-top: calc(var(--header-h) + 80px);
+    transition: background-color 0.5s var(--ease);
+  }
+  .card:hover,
+  .card:target {
+    background: var(--ink-2);
+  }
+  .card--media {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.75fr);
+  }
+  .card__body {
+    padding: clamp(28px, 3.5vw, 52px);
+  }
+  .card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+  .card :global(.card__icon) {
+    width: 26px;
+    height: 26px;
+    stroke-width: 1.2;
+    color: var(--copper);
+  }
+  .card__num {
+    font-size: 0.74rem;
+    letter-spacing: 0.22em;
+    color: var(--stone);
+  }
+  .card h2 {
+    margin-bottom: 18px;
+    font-size: clamp(2rem, 3.2vw, 2.8rem);
+  }
+  .card p {
+    margin: 0;
+  }
+  .card .card__price {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hair);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: var(--ivory);
+  }
+  .card__media {
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    background: radial-gradient(closest-side, rgba(243, 239, 231, 0.1), transparent), var(--ink-2);
+    border-left: 1px solid var(--hair);
+  }
+  .card__media :global(img) {
+    max-height: 220px;
+    width: auto;
+    filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.6));
+  }
+  @media (max-width: 1100px) {
+    .card--media {
+      grid-template-columns: 1fr;
+    }
+    .card__media {
+      order: -1;
+      max-height: 260px;
+      border-left: 0;
+      border-bottom: 1px solid var(--hair);
+    }
+  }
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

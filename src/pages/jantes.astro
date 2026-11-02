@@ -1,0 +1,119 @@
+---
+import ArrowUpRight from '@lucide/astro/icons/arrow-up-right';
+import configurateur from '../assets/services/configurateur.png';
+import janteAcier from '../assets/services/jante-acier.png';
+import janteAlu from '../assets/services/jante-alu.png';
+import jantes from '../assets/services/jantes.png';
+import CtaBand from '../components/CtaBand.astro';
+import Feature from '../components/Feature.astro';
+import PageHero from '../components/PageHero.astro';
+import Base from '../layouts/Base.astro';
+
+const sections = [
+  { id: 'configurateur', label: 'Configurateur' },
+  { id: 'alu', label: 'Jantes alu' },
+  { id: 'acier', label: 'Jantes acier' },
+  { id: 'reparation', label: 'Réparation' },
+];
+
+const configurators = [
+  { label: 'Wheels4you', url: 'https://konfigurator.wheels4you.ch', host: 'konfigurator.wheels4you.ch' },
+  { label: 'Alcar 3D', url: 'https://www.alcar.de/3DKonfigurator', host: 'alcar.de/3DKonfigurator' },
+  { label: 'Wheel Pros', url: 'https://www.wheelpros.com', host: 'wheelpros.com' },
+];
+---
+
+<Base
+  title="Jantes alu et acier, configurateur, réparation"
+  description="Large gamme de jantes en aluminium et en acier à Yverdon-les-Bains. Visualisez vos jantes avec nos configurateurs en ligne. Réparation de jantes."
+>
+  <PageHero
+    title="Jantes"
+    intro="Vous trouverez chez nous une large gamme de jantes en aluminium ou en acier. Une fois que nous avons déterminé de quelles jantes d’origine votre voiture est équipée, nous pouvons vous proposer de nombreux modèles."
+    image={jantes}
+    {sections}
+  />
+
+  <div class="container">
+    <Feature id="configurateur" index={1} title="Configurateur de jantes" image={configurateur} imageAlt="Visualisation de jantes sur une voiture">
+      <p>Vous désirez visualiser les jantes de vos rêves sur votre voiture en un clic ? Essayez l’un de ces configurateurs, puis venez nous voir pour le montage.</p>
+      <ul class="configurators">
+        {
+          configurators.map((c) => (
+            <li>
+              <a href={c.url} target="_blank" rel="noopener">
+                <span>
+                  <strong>{c.label}</strong>
+                  <small>{c.host}</small>
+                </span>
+                <ArrowUpRight aria-hidden="true" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </Feature>
+
+    <Feature id="alu" index={2} title="Jantes alu" image={janteAlu} imageAlt="Jante en aluminium" reverse>
+      <p>Nous vous proposons un large choix de jantes en aluminium, qui vous permettra d’équiper votre véhicule à votre goût.</p>
+    </Feature>
+
+    <Feature id="acier" index={3} title="Jantes en acier" image={janteAcier} imageAlt="Jante en acier">
+      <p>
+        Produites et utilisées dès le début du 20<sup>e</sup> siècle, les jantes en acier restent les plus courantes aujourd’hui.
+        Elles sont plus économiques et peuvent résister à des contraintes élevées.
+      </p>
+    </Feature>
+
+    <Feature id="reparation" index={4} title="Réparation des jantes" reverse>
+      <p>Quel que soit le dégât occasionné sur une jante, nous vous garantissons une réparation optimale.</p>
+      <p><button class="btn btn--sm" popovertarget="rdv">Demander un rendez-vous</button></p>
+    </Feature>
+  </div>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .configurators {
+    margin: 32px 0 0;
+    padding: 0 !important;
+    list-style: none;
+    border-top: 1px solid var(--hair);
+  }
+  .configurators a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .configurators strong {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.75rem;
+    line-height: 1.1;
+    transition: color 0.3s;
+  }
+  .configurators small {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    color: var(--stone);
+  }
+  .configurators :global(svg) {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.3;
+    color: var(--ivory);
+    transition: transform 0.5s var(--ease);
+  }
+  .configurators a:hover strong {
+    color: var(--copper);
+  }
+  .configurators a:hover :global(svg) {
+    transform: translate(4px, -4px);
+  }
+</style>

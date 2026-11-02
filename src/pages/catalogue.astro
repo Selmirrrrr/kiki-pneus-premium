@@ -1,0 +1,609 @@
+---
+import RotateCcw from '@lucide/astro/icons/rotate-ccw';
+import Search from '@lucide/astro/icons/search';
+import ArrowRight from '@lucide/astro/icons/arrow-right';
+import PageHero from '../components/PageHero.astro';
+import { agencies } from '../data/site';
+import Base from '../layouts/Base.astro';
+import { seasonLabels } from '../lib/tires';
+
+const selects = [
+  { key: 'width', label: 'Largeur' },
+  { key: 'ratio', label: 'Hauteur' },
+  { key: 'rim', label: 'Diamètre' },
+  { key: 'speed', label: 'Vitesse' },
+  { key: 'brand', label: 'Marque' },
+];
+const decoder = [
+  { part: '205', label: 'Largeur', hint: 'en mm' },
+  { part: '/55', label: 'Hauteur', hint: '% de la largeur' },
+  { part: ' R', label: 'Radial', hint: 'structure' },
+  { part: '16', label: 'Diamètre', hint: 'de jante, en pouces' },
+  { part: ' 91', label: 'Charge', hint: 'indice' },
+  { part: 'V', label: 'Vitesse', hint: 'indice' },
+];
+---
+
+<Base
+  title="Catalogue de pneus"
+  description="Recherchez votre pneu parmi plus de 20 000 références toutes marques : été, hiver, 4 saisons. Filtrez par dimension et demandez une offre à Kiki Pneus SA, Yverdon-les-Bains."
+>
+  <PageHero
+    eyebrow="Nos pneus"
+    title="Catalogue pneus"
+    intro="Trouvez le pneu qu’il vous faut parmi des milliers de références toutes marques, puis demandez-nous une offre : nous vous répondons rapidement, montage compris."
+  />
+
+  <section class="section catalogue">
+    <div class="container">
+      <figure class="decoder">
+        <figcaption>
+          <strong>Où trouver la dimension ?</strong> Sur le flanc de votre pneu actuel :
+        </figcaption>
+        <ol>
+          {
+            decoder.map((d) => (
+              <li>
+                <span class="decoder__part">{d.part}</span>
+                <span class="decoder__label">{d.label}</span>
+                <span class="decoder__hint">{d.hint}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </figure>
+
+      <div class="layout">
+        <form class="filters" role="search" aria-label="Filtrer les pneus">
+          <label class="search">
+            <span class="sr-only">Recherche</span>
+            <Search aria-hidden="true" />
+            <input type="search" name="q" placeholder="Marque, profil, 205/55R16…" autocomplete="off" />
+          </label>
+
+          <fieldset class="seasons">
+            <legend>Saison</legend>
+            <label><input type="radio" name="season" value="" checked /><span>Toutes</span></label>
+            {
+              Object.entries(seasonLabels).map(([value, label]) => (
+                <label>
+                  <input type="radio" name="season" value={value} />
+                  <span>
+                    {label} <small data-season-count={value} />
+                  </span>
+                </label>
+              ))
+            }
+          </fieldset>
+
+          <div class="selects">
+            {
+              selects.map((s) => (
+                <label>
+                  <span>{s.label}</span>
+                  <select name={s.key} disabled>
+                    <option value="">Tous</option>
+                  </select>
+                </label>
+              ))
+            }
+          </div>
+
+          <button type="reset" class="btn btn--sm btn--ghost reset">
+            <RotateCcw aria-hidden="true" /> Réinitialiser
+          </button>
+        </form>
+
+        <div class="results">
+          <p class="results__count" role="status" aria-live="polite">Chargement du catalogue…</p>
+          <ul class="results__grid" data-results>
+            {Array.from({ length: 6 }, () => <li class="skeleton" aria-hidden="true" />)}
+          </ul>
+          <div class="results__error" hidden>
+            <p>
+              Le catalogue est momentanément indisponible. Contactez-nous directement : <a href={agencies[0].phoneHref}>{agencies[0].phone}</a>
+              ou <a href={`mailto:${agencies[0].email}`}>{agencies[0].email}</a>.
+            </p>
+          </div>
+          <button class="btn btn--ghost more" type="button" hidden>Afficher plus</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <template id="tire-card">
+    <li class="tire">
+      <div class="tire__top">
+        <span class="tire__brand" data-field="brand"></span>
+        <span class="tire__season" data-field="season"></span>
+      </div>
+      <p class="tire__size" data-field="size"></p>
+      <p class="tire__profile" data-field="profile"></p>
+      <dl class="tire__specs">
+        <div><dt>Charge</dt><dd data-field="load"></dd></div>
+        <div><dt>Vitesse</dt><dd data-field="speed"></dd></div>
+        <div><dt>EAN</dt><dd data-field="ean"></dd></div>
+      </dl>
+      <a class="link tire__cta" data-field="cta">
+        Demander une offre <ArrowRight aria-hidden="true" />
+      </a>
+    </li>
+  </template>
+</Base>
+
+<script>
+  import { facetKeys, facetOptions, loadTires, matches, seasonLabels, type Filters, type Tire } from '../lib/tires';
+  import { link } from '../lib/url';
+
+  const PAGE = 24;
+  const form = document.querySelector<HTMLFormElement>('.filters')!;
+  const grid = document.querySelector<HTMLUListElement>('[data-results]')!;
+  const count = document.querySelector<HTMLElement>('.results__count')!;
+  const more = document.querySelector<HTMLButtonElement>('.more')!;
+  const error = document.querySelector<HTMLElement>('.results__error')!;
+  const template = document.querySelector<HTMLTemplateElement>('#tire-card')!;
+  const nf = new Intl.NumberFormat('fr-CH');
+
+  let tires: Tire[] = [];
+  let results: Tire[] = [];
+  let shown = 0;
+
+  const readFilters = (): Filters => {
+    const data = new FormData(form);
+    const get = (k: string) => String(data.get(k) ?? '');
+    return {
+      q: get('q').trim(),
+      season: get('season') as Filters['season'],
+      width: get('width'),
+      ratio: get('ratio'),
+      rim: get('rim'),
+      brand: get('brand'),
+      speed: get('speed'),
+    };
+  };
+
+  const writeUrl = (f: Filters) => {
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(f)) if (v) params.set(k, v);
+    const qs = params.toString();
+    history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+  };
+
+  const restoreFromUrl = () => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    if (q) (form.elements.namedItem('q') as HTMLInputElement).value = q;
+    const season = params.get('season');
+    const radio = season && form.querySelector<HTMLInputElement>(`input[name=season][value="${CSS.escape(season)}"]`);
+    if (radio) radio.checked = true;
+    return params;
+  };
+
+  const renderFacets = (f: Filters) => {
+    for (const key of facetKeys) {
+      const select = form.elements.namedItem(key) as HTMLSelectElement;
+      const options = facetOptions(tires, f, key);
+      const current = f[key];
+      select.replaceChildren(new Option('Tous', ''));
+      for (const [value, n] of options) {
+        const label = key === 'rim' ? `${value}″` : value;
+        select.append(new Option(`${label} (${nf.format(n)})`, value, false, value === current));
+      }
+      if (current && !options.some(([v]) => v === current)) select.value = '';
+      select.disabled = options.length === 0;
+    }
+    for (const el of form.querySelectorAll<HTMLElement>('[data-season-count]')) {
+      const season = el.dataset.seasonCount;
+      const n = tires.filter((t) => t.season === season && matches(t, f, 'season')).length;
+      el.textContent = nf.format(n);
+    }
+  };
+
+  const card = (t: Tire) => {
+    const node = template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const set = (field: string, value: string) => {
+      const el = node.querySelector<HTMLElement>(`[data-field="${field}"]`)!;
+      if (value) el.textContent = value;
+      else (el.closest('.tire__specs > div') ?? el).remove();
+    };
+    set('brand', t.brand);
+    set('size', t.size);
+    set('profile', t.profile);
+    set('load', t.load);
+    set('speed', t.speed);
+    set('ean', t.ean);
+    const season = node.querySelector<HTMLElement>('[data-field="season"]')!;
+    if (t.season) {
+      season.textContent = seasonLabels[t.season];
+      season.dataset.season = t.season;
+    } else season.remove();
+    const label = [t.brand, t.profile, t.size, `${t.load}${t.speed}`.trim(), t.ean && `(EAN ${t.ean})`].filter(Boolean).join(' ');
+    node.querySelector<HTMLAnchorElement>('[data-field="cta"]')!.href = link(`/contact?pneu=${encodeURIComponent(label)}`);
+    return node;
+  };
+
+  const renderMore = () => {
+    const next = results.slice(shown, shown + PAGE);
+    grid.append(...next.map(card));
+    shown += next.length;
+    more.hidden = shown >= results.length;
+    more.textContent = `Afficher plus (${nf.format(results.length - shown)} restants)`;
+  };
+
+  const update = () => {
+    const f = readFilters();
+    results = tires.filter((t) => matches(t, f));
+    renderFacets(f);
+    count.textContent =
+      results.length === 0
+        ? 'Aucun pneu ne correspond à ces critères. Essayez d’élargir votre recherche, ou contactez-nous.'
+        : `${nf.format(results.length)} pneu${results.length > 1 ? 's' : ''} trouvé${results.length > 1 ? 's' : ''}`;
+    grid.replaceChildren();
+    shown = 0;
+    renderMore();
+    writeUrl(f);
+  };
+
+  let debounce: number | undefined;
+  form.addEventListener('input', (e) => {
+    clearTimeout(debounce);
+    debounce = window.setTimeout(update, (e.target as HTMLElement).matches('[type=search]') ? 220 : 0);
+  });
+  form.addEventListener('submit', (e) => e.preventDefault());
+  form.addEventListener('reset', () => setTimeout(update));
+  more.addEventListener('click', renderMore);
+
+  loadTires()
+    .then((data) => {
+      tires = data;
+      const params = restoreFromUrl();
+      // les options des listes n'existent qu'après un premier rendu
+      renderFacets(readFilters());
+      for (const key of facetKeys) {
+        const v = params.get(key);
+        if (v) (form.elements.namedItem(key) as HTMLSelectElement).value = v;
+      }
+      update();
+    })
+    .catch((e) => {
+      console.error(e);
+      grid.replaceChildren();
+      count.textContent = '';
+      error.hidden = false;
+    });
+</script>
+
+<style>
+  .decoder {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px 48px;
+    margin: 0 0 clamp(48px, 6vw, 72px);
+    padding: clamp(24px, 3vw, 36px) 0;
+    border-block: 1px solid var(--hair);
+  }
+  .decoder figcaption {
+    max-width: 240px;
+    font-size: 0.9rem;
+    color: var(--stone);
+  }
+  .decoder figcaption strong {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.6rem;
+    line-height: 1.1;
+    color: var(--ivory);
+  }
+  .decoder ol {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .decoder li {
+    display: grid;
+    align-content: start;
+    max-width: 120px;
+    padding: 0 4px;
+  }
+  .decoder__part {
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--copper);
+    font-family: var(--serif);
+    font-size: clamp(2.6rem, 5vw, 3.8rem);
+    line-height: 1;
+    white-space: pre;
+    color: var(--ivory);
+    transition: color 0.3s;
+  }
+  .decoder li:nth-child(even) .decoder__part {
+    border-color: var(--hair-strong);
+  }
+  .decoder li:hover .decoder__part {
+    color: var(--copper);
+  }
+  .decoder__label {
+    margin-top: 10px;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ivory);
+  }
+  .decoder__hint {
+    font-size: 0.75rem;
+    color: var(--stone);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+  .filters {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    display: grid;
+    gap: 26px;
+  }
+  .search {
+    position: relative;
+  }
+  .search :global(svg) {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.4;
+    translate: 0 -50%;
+    color: var(--stone);
+  }
+  .filters input[type='search'],
+  .filters select {
+    width: 100%;
+    padding: 12px 0;
+    border: 0;
+    border-bottom: 1px solid var(--hair-strong);
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 0.98rem;
+    color: var(--ivory);
+    transition: border-color 0.3s;
+  }
+  .filters select {
+    appearance: none;
+    padding-right: 20px;
+    background: linear-gradient(45deg, transparent 50%, var(--stone) 50%) calc(100% - 6px) 52% / 5px 5px no-repeat,
+      linear-gradient(-45deg, transparent 50%, var(--stone) 50%) 100% 52% / 5px 5px no-repeat;
+    cursor: pointer;
+  }
+  .filters select option {
+    background: var(--ink-2);
+    color: var(--ivory);
+  }
+  .filters input[type='search'] {
+    padding-left: 30px;
+  }
+  .filters input[type='search']::placeholder {
+    color: var(--stone);
+  }
+  .filters input[type='search']:focus,
+  .filters select:focus {
+    outline: none;
+    border-color: var(--copper);
+  }
+  .filters select:disabled {
+    opacity: 0.4;
+  }
+  .seasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .seasons legend,
+  .selects label > span {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .seasons label {
+    position: relative;
+  }
+  .seasons input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .seasons span {
+    display: block;
+    padding: 8px 14px;
+    border: 1px solid var(--hair-strong);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--ivory-dim);
+    transition:
+      background-color 0.3s,
+      border-color 0.3s,
+      color 0.3s;
+  }
+  .seasons small {
+    color: var(--stone);
+  }
+  .seasons input:checked + span {
+    background: var(--ivory);
+    border-color: var(--ivory);
+    color: var(--ink);
+  }
+  .seasons input:checked + span small {
+    color: var(--copper-ink);
+  }
+  .seasons input:focus-visible + span {
+    outline: 1px solid var(--copper);
+    outline-offset: 3px;
+  }
+  .selects {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 20px;
+  }
+  .selects label:last-child {
+    grid-column: 1 / -1;
+  }
+  .reset {
+    justify-self: start;
+  }
+
+  .results__count {
+    margin: 0 0 24px;
+    font-family: var(--serif);
+    font-size: 2rem;
+    line-height: 1.1;
+    color: var(--ivory);
+  }
+  .results__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--hair);
+    border-left: 1px solid var(--hair);
+  }
+  .skeleton {
+    height: 280px;
+    border-right: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    background: linear-gradient(100deg, transparent 30%, rgba(243, 239, 231, 0.05) 50%, transparent 70%) 0 0 / 300% 100%;
+    animation: shimmer 1.6s infinite linear;
+  }
+  @keyframes shimmer {
+    to {
+      background-position: -150% 0;
+    }
+  }
+  .results__error {
+    padding: 28px 0;
+    border-block: 1px solid var(--hair);
+  }
+  .results__error a {
+    color: var(--ivory);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .more {
+    display: flex;
+    margin: 36px auto 0;
+  }
+  .more[hidden] {
+    display: none;
+  }
+
+  .results :global(.tire) {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 26px;
+    border-right: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    animation: card-in 0.6s var(--ease) both;
+    transition: background-color 0.4s var(--ease);
+  }
+  .results :global(.tire:hover) {
+    background: var(--ink-2);
+  }
+  .results :global(.tire__top) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .results :global(.tire__brand) {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ivory-dim);
+  }
+  .results :global(.tire__season) {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.75rem;
+    color: var(--stone);
+  }
+  .results :global(.tire__season::before) {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #e3b462;
+  }
+  .results :global(.tire__season[data-season='hiver']::before) {
+    background: #8fb8e0;
+  }
+  .results :global(.tire__season[data-season='4saisons']::before) {
+    background: var(--ok);
+  }
+  .results :global(.tire__size) {
+    margin: 14px 0 0;
+    font-family: var(--serif);
+    font-size: 2.3rem;
+    line-height: 1;
+    color: var(--ivory);
+    font-variant-numeric: tabular-nums;
+  }
+  .results :global(.tire__profile) {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .results :global(.tire__specs) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin: 14px 0 22px;
+    font-size: 0.8rem;
+  }
+  .results :global(.tire__specs dt) {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .results :global(.tire__specs dd) {
+    margin: 0;
+    color: var(--ivory);
+  }
+  .results :global(.tire__cta) {
+    align-self: flex-start;
+    margin-top: auto;
+  }
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .filters {
+      position: static;
+    }
+  }
+</style>

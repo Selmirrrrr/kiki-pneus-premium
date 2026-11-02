@@ -1,0 +1,597 @@
+---
+import { Image } from 'astro:assets';
+import ArrowRight from '@lucide/astro/icons/arrow-right';
+import ArrowUpRight from '@lucide/astro/icons/arrow-up-right';
+import atelier from '../assets/photos/atelier.jpg';
+import enseigne from '../assets/photos/enseigne-centre.jpg';
+import geometriePhoto from '../assets/photos/geometrie.jpg';
+import janteAlu from '../assets/services/jante-alu.png';
+import pneus from '../assets/services/pneus.png';
+import Agencies from '../components/Agencies.astro';
+import Brands from '../components/Brands.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Reviews from '../components/Reviews.astro';
+import { site, vehicleTypes } from '../data/site';
+import Base from '../layouts/Base.astro';
+import { link } from '../lib/url';
+
+const services = [
+  {
+    href: '/pneus',
+    title: 'Pneus',
+    image: pneus,
+    cutout: true,
+    text: 'En été comme en hiver, il est primordial d’équiper votre véhicule de pneus adaptés à chaque saison. C’est une condition essentielle pour rouler en toute sécurité.',
+  },
+  {
+    href: '/jantes',
+    title: 'Jantes',
+    image: janteAlu,
+    cutout: true,
+    text: 'Une fois vos jantes d’origine identifiées, nous vous proposons de nombreux modèles en alu ou en acier. Notre configurateur vous aide à trouver l’ajustement parfait.',
+  },
+  {
+    href: '/geometrie',
+    title: 'Géométrie',
+    image: geometriePhoto,
+    cutout: false,
+    text: 'Une géométrie déréglée entraîne une usure irrégulière des pneus et réduit leur durée de vie. Un contrôle est conseillé tous les 2 ans.',
+  },
+  {
+    href: '/services',
+    title: 'Services auto',
+    image: atelier,
+    cutout: false,
+    text: 'Vidange moteur, freins, climatisation, préparation à l’expertise, réglage des phares ainsi que tout type d’entretien.',
+  },
+];
+
+const stats = [
+  { value: String(site.founded), label: 'Fondée à Yverdon' },
+  { value: '5000+', label: 'Roues en gardiennage' },
+  { value: '3 ans', label: 'Garantie crevaison' },
+  { value: '2', label: 'Agences à Yverdon' },
+];
+---
+
+<Base
+  title="Kiki Pneus SA — Spécialiste pneus toutes marques à Yverdon-les-Bains"
+  description="Pneus été et hiver, jantes, géométrie, gardiennage et services auto à Yverdon-les-Bains depuis 1959. Deux agences : Rue d'Orbe et Route de Lausanne. Prenez rendez-vous en ligne."
+>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <p class="label hero__in" style="--i: 0">Yverdon-les-Bains — depuis {site.founded}</p>
+        <h1 class="hero__in" style="--i: 1">Votre spécialiste en pneus <em>toutes marques</em></h1>
+        <p class="lead hero__in" style="--i: 2">
+          Depuis plus de 60 ans, notre équipe vous offre un service personnalisé, rapide et compétent — pour voitures,
+          motos, scooters, camions, véhicules agricoles et de génie civil.
+        </p>
+        <div class="hero__actions hero__in" style="--i: 3">
+          <button class="btn" popovertarget="rdv">Prendre rendez-vous <ArrowRight aria-hidden="true" /></button>
+          <a class="link" href={link('/tarifs')}>Estimer le prix <ArrowRight aria-hidden="true" /></a>
+        </div>
+      </div>
+
+      <div class="hero__visual spotlight">
+        <Image
+          class="hero__product"
+          src={pneus}
+          alt="Jeu de pneus et jantes"
+          widths={[420, 640, 793]}
+          sizes="(max-width: 900px) 80vw, 560px"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <div class="hero__floor" aria-hidden="true"></div>
+        <p class="hero__caption">
+          <span class="italic">Garantie 3 ans</span>
+          en cas de crevaison, toutes marques
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+      <dl class="stats">
+        {
+          stats.map((s, i) => (
+            <div class="hero__in" style={`--i: ${4 + i * 0.6}`}>
+              <dt>{s.label}</dt>
+              <dd>{s.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <Brands />
+
+  <!-- PRESTATIONS -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="label">Nos prestations</p>
+        <h2>Tout pour vos roues — <em>et le reste</em></h2>
+      </div>
+      <ol class="index">
+        {
+          services.map((s, i) => (
+            <li class="reveal" style={`--delay: ${i * 0.06}s`}>
+              <a class="index__row" href={link(s.href)}>
+                <span class="index__num">{String(i + 1).padStart(2, '0')}</span>
+                <span class="index__title">{s.title}</span>
+                <span class="index__text">{s.text}</span>
+                <span class:list={['index__thumb', { 'index__thumb--cutout': s.cutout }]} aria-hidden="true">
+                  <Image class:list={{ photo: !s.cutout }} src={s.image} alt="" widths={[240, 360]} sizes="200px" />
+                </span>
+                <span class="index__arrow" aria-hidden="true">
+                  <ArrowUpRight />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- À PROPOS -->
+  <section class="section light about" id="presentation">
+    <div class="container">
+      <div class="about__intro reveal">
+        <p class="label">À propos de nous</p>
+        <p class="about__statement">
+          L’équipe Kiki-Pneus SA se distingue par sa longue expérience, son savoir-faire et son désir de{' '}
+          <em>satisfaire pleinement</em> ses clients.
+        </p>
+      </div>
+
+      <div class="about__grid">
+        <figure class="about__fig about__fig--a reveal">
+          <Image class="photo" src={enseigne} alt="Enseigne de l'agence Kiki Pneus à la Rue d'Orbe" widths={[420, 640]} sizes="(max-width: 900px) 92vw, 520px" />
+          <figcaption>Rue d’Orbe — au cœur d’Yverdon depuis {site.founded}</figcaption>
+        </figure>
+        <div class="about__text reveal" style="--delay: .1s">
+          <p class="lead">
+            Partenaire de marques leaders comme Michelin, Pirelli ou Bridgestone, nous offrons à notre clientèle un service
+            personnalisé, rapide et compétent.
+          </p>
+          <dl class="about__points">
+            <div>
+              <dt>Agence centre</dt>
+              <dd>
+                À 2 minutes à pied du centre-ville et des centres commerciaux Métropole et Bel-Air : faites vos courses
+                pendant que nous nous occupons de votre véhicule.
+              </dd>
+            </div>
+            <div>
+              <dt>Agence sud</dt>
+              <dd>Ouverte en juillet 2017 à la sortie de la ville, à quelques secondes de la sortie d'autoroute Yverdon-Sud.</dd>
+            </div>
+            <div>
+              <dt>Véhicules</dt>
+              <dd>{vehicleTypes.join(' · ')}</dd>
+            </div>
+          </dl>
+        </div>
+        <figure class="about__fig about__fig--b reveal" style="--delay: .2s">
+          <Image class="photo" src={atelier} alt="L'atelier et le stock de pneus" width={417} />
+          <figcaption>L’atelier</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAISON -->
+  <section class="season">
+    <div class="container season__grid">
+      <div class="season__temp reveal" aria-hidden="true">7°</div>
+      <div class="reveal" style="--delay: .1s">
+        <p class="label">Changement de saison</p>
+        <h2>Sous 7&nbsp;°C, passez aux pneus <em>d’hiver</em></h2>
+        <p class="lead">
+          La gomme d’un pneu d’hiver est plus tendre : elle permet par exemple de gagner 1,5 mètre lors d’un freinage à
+          50 km/h. Nous montons vos pneus et pouvons stocker vos roues entre deux saisons.
+        </p>
+        <div class="hero__actions">
+          <button class="btn" popovertarget="rdv">Réserver un créneau <ArrowRight aria-hidden="true" /></button>
+          <a class="link" href={link('/pneus#stockage')}>Gardiennage de vos roues <ArrowRight aria-hidden="true" /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Reviews />
+
+  <!-- AGENCES -->
+  <section class="section agencies-section" id="agences">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="label">Nos agences</p>
+        <h2>Deux adresses à <em>Yverdon-les-Bains</em></h2>
+      </div>
+      <Agencies />
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<style>
+  /* HERO ---------------------------------------------------------- */
+  .hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: calc(100svh - var(--header-h) - 39px);
+    padding-block: clamp(48px, 7vw, 96px) clamp(32px, 4vw, 48px);
+    overflow: hidden;
+    background: radial-gradient(ellipse 50% 60% at 78% 42%, rgba(228, 104, 63, 0.1), transparent 70%), var(--ink);
+  }
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 80px);
+  }
+  .hero h1 {
+    font-size: clamp(3.4rem, 7.6vw, 7.6rem);
+    margin-bottom: 32px;
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px 36px;
+    margin-top: 40px;
+  }
+  .hero__in {
+    animation: hero-in 1.4s var(--ease) both;
+    animation-delay: calc(var(--i) * 0.1s + 0.1s);
+  }
+  .hero__visual {
+    display: grid;
+    justify-items: center;
+    animation: hero-in 1.8s 0.3s var(--ease) both;
+  }
+  .hero__visual :global(.hero__product) {
+    width: min(100%, 560px);
+    filter: drop-shadow(0 50px 60px rgba(0, 0, 0, 0.75)) brightness(0.95);
+    animation: float 9s ease-in-out infinite;
+  }
+  .hero__floor {
+    width: 72%;
+    height: 34px;
+    margin-top: -14px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.9), transparent);
+    animation: shadow 9s ease-in-out infinite;
+  }
+  .hero__caption {
+    justify-self: end;
+    display: grid;
+    margin: 28px 0 0;
+    padding-left: 18px;
+    border-left: 1px solid var(--copper);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    color: var(--stone);
+  }
+  .hero__caption .italic {
+    font-size: 1.5rem;
+    color: var(--ivory);
+    letter-spacing: 0;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: clamp(48px, 6vw, 80px) 0 0;
+    border-top: 1px solid var(--hair);
+  }
+  .stats div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 28px 24px 0 0;
+  }
+  .stats div + div {
+    padding-left: 28px;
+    border-left: 1px solid var(--hair);
+  }
+  .stats dd {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(2.4rem, 4.2vw, 3.8rem);
+    line-height: 1;
+    color: var(--ivory);
+  }
+  .stats dt {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+  }
+  @keyframes float {
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+  @keyframes shadow {
+    50% {
+      transform: scaleX(0.9);
+      opacity: 0.75;
+    }
+  }
+
+  /* INDEX DES PRESTATIONS --------------------------------------- */
+  .index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--hair);
+  }
+  .index li {
+    border-bottom: 1px solid var(--hair);
+  }
+  .index__row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr) minmax(0, 1.1fr) 200px 56px;
+    align-items: center;
+    gap: 32px;
+    padding-block: clamp(28px, 3.5vw, 44px);
+  }
+  .index__num {
+    font-size: 0.75rem;
+    letter-spacing: 0.22em;
+    color: var(--stone);
+  }
+  .index__title {
+    font-family: var(--serif);
+    font-size: clamp(2.4rem, 4.6vw, 4.2rem);
+    line-height: 1;
+    color: var(--ivory);
+    transition:
+      transform 0.7s var(--ease),
+      color 0.4s;
+  }
+  .index__text {
+    max-width: 46ch;
+    font-size: 0.98rem;
+  }
+  .index__thumb {
+    display: grid;
+    place-items: center;
+    height: 130px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--ink-2);
+    clip-path: inset(50% 0 50% 0 round var(--radius-lg));
+    transition: clip-path 0.8s var(--ease);
+  }
+  .index__thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.15);
+    transition: transform 1.2s var(--ease);
+  }
+  .index__thumb--cutout {
+    background: radial-gradient(closest-side, rgba(243, 239, 231, 0.12), transparent), var(--ink-2);
+  }
+  .index__thumb--cutout :global(img) {
+    width: auto;
+    height: 82%;
+    object-fit: contain;
+  }
+  .index__arrow {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid var(--hair-strong);
+    border-radius: 50%;
+    color: var(--ivory);
+    transition:
+      background-color 0.5s var(--ease),
+      border-color 0.5s var(--ease),
+      color 0.5s;
+  }
+  .index__arrow :global(svg) {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.4;
+  }
+  .index__row:hover .index__title,
+  .index__row:focus-visible .index__title {
+    transform: translateX(14px);
+    color: var(--copper);
+  }
+  .index__row:hover .index__thumb,
+  .index__row:focus-visible .index__thumb {
+    clip-path: inset(0 0 0 0 round var(--radius-lg));
+  }
+  .index__row:hover .index__thumb :global(img) {
+    transform: none;
+  }
+  .index__row:hover .index__arrow {
+    background: var(--ivory);
+    border-color: var(--ivory);
+    color: var(--ink);
+  }
+
+  /* À PROPOS ------------------------------------------------------ */
+  .about__intro {
+    max-width: 1100px;
+    margin-bottom: clamp(56px, 7vw, 104px);
+  }
+  .about__statement {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(2rem, 4.4vw, 3.9rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--paper-ink);
+  }
+  .about__statement em {
+    color: var(--copper-ink);
+  }
+  .about__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.7fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: start;
+  }
+  .about__fig {
+    margin: 0;
+  }
+  .about__fig :global(img) {
+    width: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+  .about__fig--a :global(img) {
+    aspect-ratio: 4 / 4.6;
+  }
+  .about__fig--b {
+    margin-top: clamp(80px, 12vw, 200px);
+  }
+  .about__fig--b :global(img) {
+    aspect-ratio: 3 / 4;
+  }
+  figcaption {
+    margin-top: 14px;
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paper-muted);
+  }
+  .about__text {
+    padding-top: clamp(0px, 3vw, 48px);
+  }
+  .about__points {
+    margin: 36px 0 0;
+    border-top: 1px solid var(--paper-hair);
+  }
+  .about__points div {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--paper-hair);
+  }
+  .about__points dt {
+    margin-bottom: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paper-ink);
+  }
+  .about__points dd {
+    margin: 0;
+    font-size: 0.98rem;
+  }
+
+  /* SAISON -------------------------------------------------------- */
+  .season {
+    padding-block: clamp(88px, 12vw, 168px);
+    overflow: hidden;
+    background: radial-gradient(ellipse 40% 60% at 15% 50%, rgba(228, 104, 63, 0.12), transparent 70%), var(--ink);
+  }
+  .season__grid {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(40px, 7vw, 120px);
+  }
+  .season__temp {
+    font-family: var(--serif);
+    font-size: clamp(10rem, 26vw, 24rem);
+    line-height: 0.75;
+    letter-spacing: -0.05em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(243, 239, 231, 0.5);
+  }
+  .season h2 {
+    max-width: 16ch;
+  }
+
+  .agencies-section {
+    padding-top: 0;
+  }
+
+  @media (max-width: 1100px) {
+    .index__row {
+      grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr) 56px;
+    }
+    .index__thumb {
+      display: none;
+    }
+  }
+  @media (max-width: 900px) {
+    .hero {
+      min-height: 0;
+    }
+    .hero__grid,
+    .season__grid {
+      grid-template-columns: 1fr;
+    }
+    .hero__visual {
+      max-width: 440px;
+      margin-inline: auto;
+    }
+    .hero__caption {
+      justify-self: start;
+    }
+    .stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .stats div + div:nth-child(3) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .stats div:nth-child(n + 3) {
+      margin-top: 24px;
+      border-top: 1px solid var(--hair);
+    }
+    .about__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .about__text {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      padding-top: 0;
+    }
+    .about__fig--b {
+      margin-top: 64px;
+    }
+  }
+  @media (max-width: 640px) {
+    .index__row {
+      grid-template-columns: 1fr 48px;
+      gap: 12px 20px;
+    }
+    .index__num {
+      grid-column: 1 / -1;
+    }
+    .index__text {
+      grid-column: 1;
+    }
+    .index__arrow {
+      grid-column: 2;
+      grid-row: 2 / span 2;
+      width: 48px;
+      height: 48px;
+    }
+  }
+</style>

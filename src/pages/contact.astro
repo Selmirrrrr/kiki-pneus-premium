@@ -1,0 +1,292 @@
+---
+import Send from '@lucide/astro/icons/send';
+import Agencies from '../components/Agencies.astro';
+import PageHero from '../components/PageHero.astro';
+import { agencies } from '../data/site';
+import Base from '../layouts/Base.astro';
+
+// Adresse d'un service de formulaire (Formspree, Web3Forms, endpoint maison…).
+// Sans valeur, le formulaire ouvre la messagerie du visiteur avec le message pré-rempli.
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT ?? '';
+const subjects = ['Prise de rendez-vous', "Demande d'offre pneus", 'Jantes', 'Géométrie', 'Services auto', 'Autre question'];
+---
+
+<Base
+  title="Contact et agences"
+  description="Contactez Kiki Pneus SA à Yverdon-les-Bains : Rue d'Orbe 36 (024 426 49 47) et Route de Lausanne 31 (024 425 20 00). Horaires, itinéraire et formulaire de contact."
+>
+  <PageHero
+    eyebrow="Contact"
+    title="Contactez-nous"
+    intro="Une question, une offre pour des pneus ou des jantes ? Écrivez-nous, appelez l’une de nos agences ou passez directement nous voir."
+  />
+
+  <section class="section">
+    <div class="container contact">
+      <form class="form" data-endpoint={endpoint} novalidate>
+        <h2>Envoyez-nous un message</h2>
+        <div class="form__row">
+          <label>
+            <span>Nom</span>
+            <input type="text" name="nom" autocomplete="name" required />
+          </label>
+          <label>
+            <span>Téléphone</span>
+            <input type="tel" name="telephone" autocomplete="tel" required />
+          </label>
+        </div>
+        <label>
+          <span>E-mail</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <div class="form__row">
+          <label>
+            <span>Agence</span>
+            <select name="agence">
+              {agencies.map((a) => <option value={a.id}>{a.name.replace('Kiki Pneus ', '')} — {a.street}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Sujet</span>
+            <select name="sujet">
+              {subjects.map((s) => <option>{s}</option>)}
+            </select>
+          </label>
+        </div>
+        <label>
+          <span>Message</span>
+          <textarea name="message" rows="6" required></textarea>
+        </label>
+        <label class="form__hp" aria-hidden="true">
+          Ne pas remplir <input type="text" name="site_web" tabindex="-1" autocomplete="off" />
+        </label>
+        <div class="form__footer">
+          <button class="btn" type="submit"><Send aria-hidden="true" /> Envoyer</button>
+          <p class="form__status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+
+      <aside class="contact__direct">
+        <p class="label">En direct</p>
+        {
+          agencies.map((a) => (
+            <div class="direct">
+              <h3>{a.short}</h3>
+              <a href={a.phoneHref}>{a.phone}</a>
+              <a href={`mailto:${a.email}`}>{a.email}</a>
+            </div>
+          ))
+        }
+      </aside>
+    </div>
+  </section>
+
+  <section class="section agencies-section" id="agences">
+    <div class="container">
+      <div class="section-head">
+        <p class="label">Garages</p>
+        <h2>Nos deux agences</h2>
+      </div>
+      <Agencies />
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { agencies } from '../data/site';
+
+  const form = document.querySelector<HTMLFormElement>('.form')!;
+  const status = form.querySelector<HTMLElement>('.form__status')!;
+  const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+  // Pré-remplissage depuis le catalogue (?pneu=...)
+  const pneu = new URLSearchParams(location.search).get('pneu');
+  if (pneu) {
+    field('sujet').value = "Demande d'offre pneus";
+    field('message').value = `Bonjour,\n\nJe souhaite recevoir une offre pour le pneu suivant :\n${pneu}\n\nQuantité : 4\n\nMerci !`;
+  }
+
+  const setStatus = (text: string, state: 'ok' | 'error' | '' = '') => {
+    status.textContent = text;
+    status.dataset.state = state;
+  };
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      form.querySelector<HTMLElement>(':invalid')?.focus();
+      setStatus('Merci de remplir les champs obligatoires.', 'error');
+      return;
+    }
+    if (field('site_web').value) return; // robot
+
+    const data = new FormData(form);
+    data.delete('site_web');
+    const agency = agencies.find((a) => a.id === data.get('agence')) ?? agencies[0];
+    const endpoint = form.dataset.endpoint;
+
+    if (!endpoint) {
+      const body = [data.get('message'), '', '—', `${data.get('nom')}`, `${data.get('telephone')}`, `${data.get('email')}`].join('\n');
+      const subject = `${data.get('sujet')} — ${data.get('nom')}`;
+      location.href = `mailto:${agency.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      setStatus('Votre messagerie s’ouvre avec le message pré-rempli.', 'ok');
+      return;
+    }
+
+    const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    button.disabled = true;
+    setStatus('Envoi en cours…');
+    try {
+      data.set('destinataire', agency.email);
+      const res = await fetch(endpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      form.classList.remove('was-validated');
+      setStatus('Merci ! Votre message a bien été envoyé, nous vous répondrons rapidement.', 'ok');
+    } catch {
+      setStatus(`L’envoi a échoué. Appelez-nous au ${agency.phone} ou écrivez à ${agency.email}.`, 'error');
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: clamp(48px, 7vw, 120px);
+    align-items: start;
+  }
+  .form {
+    display: grid;
+    gap: 30px;
+  }
+  .form h2 {
+    margin-bottom: 8px;
+    font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+  }
+  .form__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  label {
+    display: grid;
+    gap: 4px;
+  }
+  label > span {
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 0;
+    border: 0;
+    border-bottom: 1px solid var(--hair-strong);
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--ivory);
+    transition: border-color 0.3s;
+  }
+  select {
+    appearance: none;
+    background: linear-gradient(45deg, transparent 50%, var(--stone) 50%) calc(100% - 6px) 52% / 5px 5px no-repeat,
+      linear-gradient(-45deg, transparent 50%, var(--stone) 50%) 100% 52% / 5px 5px no-repeat;
+    cursor: pointer;
+  }
+  select option {
+    background: var(--ink-2);
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--copper);
+  }
+  textarea {
+    resize: vertical;
+    line-height: 1.6;
+  }
+  :global(.was-validated) :invalid {
+    border-color: #e0715a;
+  }
+  .form__hp {
+    position: absolute;
+    left: -9999px;
+  }
+  .form__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px 28px;
+    margin-top: 8px;
+  }
+  .form__status {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .form__status[data-state='ok'] {
+    color: var(--ok);
+  }
+  .form__status[data-state='error'] {
+    color: #e0715a;
+  }
+  .contact__direct {
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+  }
+  .direct {
+    display: grid;
+    gap: 2px;
+    padding: 28px 0;
+    border-top: 1px solid var(--hair);
+  }
+  .direct:last-child {
+    border-bottom: 1px solid var(--hair);
+  }
+  .direct h3 {
+    margin-bottom: 10px;
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .direct a {
+    color: var(--ivory-dim);
+    transition: color 0.3s;
+  }
+  .direct a:first-of-type {
+    font-family: var(--serif);
+    font-size: clamp(2.2rem, 3.6vw, 3rem);
+    line-height: 1.1;
+    color: var(--ivory);
+  }
+  .direct a:hover {
+    color: var(--copper);
+  }
+  .agencies-section {
+    border-top: 1px solid var(--hair);
+  }
+
+  @media (max-width: 900px) {
+    .contact {
+      grid-template-columns: 1fr;
+    }
+    .contact__direct {
+      position: static;
+    }
+  }
+  @media (max-width: 560px) {
+    .form__row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

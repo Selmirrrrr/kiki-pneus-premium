@@ -1,0 +1,181 @@
+---
+import { Image } from 'astro:assets';
+import ArrowUpRight from '@lucide/astro/icons/arrow-up-right';
+import centre from '../assets/photos/agence-centre.jpg';
+import sud from '../assets/photos/agence-sud.jpg';
+import { agencies, hours } from '../data/site';
+
+const photos = { centre, sud };
+---
+
+<div class="agencies">
+  {
+    agencies.map((a, i) => (
+      <article class="agency reveal" style={`--delay: ${i * 0.12}s`}>
+        <div class="agency__photo">
+          <Image class="photo" src={photos[a.id]} alt={`Façade de l'agence ${a.name}`} widths={[400, 640, 900]} sizes="(max-width: 900px) 92vw, 620px" />
+          <span class="agency__tag">{String(i + 1).padStart(2, '0')} — {a.id === 'centre' ? 'Centre-ville' : 'Sortie autoroute'}</span>
+        </div>
+        <div class="agency__body">
+          <h3>{a.name.replace('Kiki Pneus ', '')}</h3>
+          <p class="agency__highlight">{a.highlight}</p>
+          <dl class="agency__info">
+            <div>
+              <dt>Adresse</dt>
+              <dd>
+                {a.street}, {a.zip} {a.city}
+              </dd>
+            </div>
+            <div>
+              <dt>Téléphone</dt>
+              <dd>
+                <a href={a.phoneHref}>{a.phone}</a>
+              </dd>
+            </div>
+            <div>
+              <dt>E-mail</dt>
+              <dd>
+                <a href={`mailto:${a.email}`}>{a.email}</a>
+              </dd>
+            </div>
+            {hours.summary.map((h) => (
+              <div>
+                <dt>{h.days}</dt>
+                <dd>
+                  {h.time}
+                  {'note' in h && <small>{h.note}</small>}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <span class="status" data-opening-status />
+          <div class="agency__actions">
+            <a class="btn btn--sm" href={a.bookingUrl} target="_blank" rel="noopener">
+              Rendez-vous
+            </a>
+            <a class="link" href={a.mapsUrl} target="_blank" rel="noopener">
+              Itinéraire <ArrowUpRight aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+      </article>
+    ))
+  }
+</div>
+<p class="agencies__note">Horaires habituels, hors jours fériés.</p>
+
+<style>
+  .agencies {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(24px, 3vw, 40px);
+  }
+  .agency {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--hair);
+    border-radius: var(--radius-lg);
+    background: var(--ink-2);
+    overflow: hidden;
+  }
+  .agency__photo {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+  .agency__photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 45%, rgba(12, 12, 13, 0.85));
+  }
+  .agency__photo :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.6s var(--ease);
+  }
+  .agency:hover .agency__photo :global(img) {
+    transform: scale(1.05);
+  }
+  .agency__tag {
+    position: absolute;
+    left: 28px;
+    bottom: 22px;
+    z-index: 1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ivory);
+  }
+  .agency__body {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    flex: 1;
+    padding: clamp(28px, 3.5vw, 44px);
+  }
+  .agency h3 {
+    margin: 0;
+    font-size: clamp(2.2rem, 3.6vw, 3rem);
+  }
+  .agency__highlight {
+    margin: 0;
+  }
+  .agency__info {
+    margin: 0;
+    border-top: 1px solid var(--hair);
+  }
+  .agency__info div {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hair);
+    font-size: 0.95rem;
+  }
+  .agency__info dt {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--stone);
+    padding-top: 3px;
+  }
+  .agency__info dd {
+    margin: 0;
+    color: var(--ivory);
+  }
+  .agency__info a:hover {
+    color: var(--copper);
+  }
+  .agency__info small {
+    display: block;
+    color: var(--stone);
+    line-height: 1.4;
+  }
+  .agency__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 28px;
+    margin-top: auto;
+  }
+  .agencies__note {
+    margin: 18px 0 0;
+    font-size: 0.82rem;
+    color: var(--stone);
+  }
+
+  @media (max-width: 900px) {
+    .agencies {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 460px) {
+    .agency__info div {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

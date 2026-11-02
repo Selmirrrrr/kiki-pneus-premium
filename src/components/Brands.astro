@@ -1,0 +1,93 @@
+---
+import { brands } from '../data/site';
+---
+
+<section class="brands" aria-labelledby="brands-title">
+  <h2 id="brands-title" class="sr-only">Top marques</h2>
+  <div class="brands__track">
+    {
+      [0, 1].map((copy) => (
+        <ul aria-hidden={copy === 1 ? 'true' : undefined}>
+          {brands.map((b) => (
+            <li>
+              <a href={b.url} target="_blank" rel="noopener" tabindex={copy === 1 ? -1 : undefined}>
+                {b.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .brands {
+    padding-block: 30px;
+    border-block: 1px solid var(--hair);
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+  .brands__track {
+    display: flex;
+    width: max-content;
+    animation: marquee 60s linear infinite;
+  }
+  .brands:hover .brands__track,
+  .brands:focus-within .brands__track {
+    animation-play-state: paused;
+  }
+  ul {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    align-items: center;
+  }
+  li::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    margin-inline: clamp(28px, 4vw, 56px);
+    border-radius: 50%;
+    background: var(--copper);
+  }
+  a {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+    color: rgba(243, 239, 231, 0.55);
+    transition: color 0.4s;
+  }
+  a:hover {
+    color: var(--ivory);
+  }
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .brands {
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+    .brands__track {
+      animation: none;
+      width: auto;
+    }
+    .brands__track ul[aria-hidden] {
+      display: none;
+    }
+    .brands__track ul {
+      flex-wrap: wrap;
+      justify-content: center;
+      row-gap: 12px;
+    }
+  }
+</style>

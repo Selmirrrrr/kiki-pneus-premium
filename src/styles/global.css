@@ -1,0 +1,461 @@
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/hanken-grotesk/wght.css';
+
+/* ------------------------------------------------------------------
+   « Atelier noir » — noir profond, ivoire, filets fins et une pointe
+   de cuivre reprise de l'orange Kiki. Titres en serif éditorial.
+------------------------------------------------------------------- */
+:root {
+  --ink: #0c0c0d;
+  --ink-2: #131314;
+  --ink-3: #1a1a1c;
+  --ink-4: #242427;
+  --ivory: #f3efe7;
+  --ivory-dim: rgba(243, 239, 231, 0.74);
+  --stone: #938e86;
+  --hair: rgba(243, 239, 231, 0.12);
+  --hair-strong: rgba(243, 239, 231, 0.26);
+
+  --copper: #e4683f;
+  --copper-soft: rgba(228, 104, 63, 0.16);
+
+  /* sections claires */
+  --paper: #f3efe7;
+  --paper-2: #ebe5da;
+  --paper-ink: #131314;
+  --paper-muted: #66615a;
+  --paper-hair: rgba(12, 12, 13, 0.14);
+  --copper-ink: #a5421e;
+
+  --ok: #5fbf86;
+  --warn: #e0ad55;
+
+  --serif: 'Instrument Serif', 'Times New Roman', serif;
+  --sans: 'Hanken Grotesk Variable', 'Helvetica Neue', sans-serif;
+
+  --radius: 2px;
+  --radius-lg: 6px;
+  --container: 1320px;
+  --gutter: clamp(16px, 4.5vw, 56px);
+  --header-h: 80px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-lg: 0 40px 80px -30px rgba(0, 0, 0, 0.7);
+
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 24px);
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--ivory-dim);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* grain photographique très discret sur tout le site */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background-image: var(--grain);
+  opacity: 0.045;
+  pointer-events: none;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 0.45em;
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--ivory);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(3.4rem, 8.4vw, 8rem);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: clamp(2.5rem, 5.4vw, 4.6rem);
+}
+
+h3 {
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+}
+
+em,
+.italic {
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+h1 em,
+h2 em,
+h3 em {
+  color: var(--copper);
+}
+
+p {
+  margin: 0 0 1em;
+  text-wrap: pretty;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--ivory);
+}
+
+:focus-visible {
+  outline: 1px solid var(--copper);
+  outline-offset: 4px;
+}
+
+::selection {
+  background: var(--copper);
+  color: var(--ink);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -100px;
+  z-index: 100;
+  padding: 10px 18px;
+  background: var(--ivory);
+  color: var(--ink);
+  border-radius: 999px;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+/* ------------------------------------------------------------------
+   Mise en page
+------------------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: clamp(88px, 12vw, 168px);
+}
+
+.section--tight {
+  padding-block: clamp(56px, 8vw, 104px);
+}
+
+/* section claire, pour rythmer le site */
+.light {
+  background: var(--paper);
+  color: var(--paper-muted);
+}
+.light h1,
+.light h2,
+.light h3,
+.light strong {
+  color: var(--paper-ink);
+}
+.light h2 em,
+.light h3 em {
+  color: var(--copper-ink);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 28px;
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+.label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--copper);
+}
+.light .label {
+  color: var(--paper-muted);
+}
+
+.lead {
+  max-width: 58ch;
+  font-size: clamp(1.1rem, 1.5vw, 1.28rem);
+  line-height: 1.6;
+  color: var(--ivory-dim);
+}
+.light .lead {
+  color: var(--paper-muted);
+}
+
+.rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--hair);
+}
+
+.section-head {
+  display: grid;
+  gap: 4px;
+  max-width: 820px;
+  margin-bottom: clamp(48px, 6vw, 88px);
+}
+.section-head h2 {
+  margin: 0;
+}
+.section-head .lead {
+  margin: 20px 0 0;
+}
+
+/* ------------------------------------------------------------------
+   Boutons et liens
+------------------------------------------------------------------- */
+.btn {
+  --btn-bg: var(--ivory);
+  --btn-fg: var(--ink);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 0 30px;
+  border: 1px solid var(--btn-bg);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color 0.5s var(--ease),
+    border-color 0.5s var(--ease);
+}
+/* remplissage cuivré qui monte au survol */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--copper);
+  transform: translateY(101%);
+  transition: transform 0.6s var(--ease);
+}
+.btn:hover::before {
+  transform: none;
+}
+.btn:hover {
+  border-color: var(--copper);
+  color: var(--ink);
+}
+.btn svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.6;
+  transition: transform 0.5s var(--ease);
+}
+.btn:hover svg:last-child {
+  transform: translateX(4px);
+}
+
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--ivory);
+  border-color: var(--hair-strong);
+}
+
+.btn--ink {
+  --btn-bg: var(--ink);
+  --btn-fg: var(--ivory);
+}
+
+.btn--sm {
+  min-height: 44px;
+  padding: 0 22px;
+  font-size: 0.74rem;
+}
+
+.light .btn--ghost {
+  --btn-fg: var(--paper-ink);
+  border-color: var(--paper-hair);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+  transition: background-size 0.6s var(--ease);
+}
+.link:hover {
+  background-size: 30% 1px;
+}
+.link svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.6;
+  transition: transform 0.5s var(--ease);
+}
+.link:hover svg {
+  transform: translateX(4px);
+}
+.light .link {
+  color: var(--paper-ink);
+}
+
+/* Statut ouvert / fermé */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+.status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--stone);
+}
+.status[data-state='open']::before {
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(95, 191, 134, 0.18);
+}
+.status[data-state='break']::before {
+  background: var(--warn);
+}
+.status:empty {
+  display: none;
+}
+
+/* Spot lumineux derrière les visuels détourés */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+}
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: -10% -10% 0;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgba(243, 239, 231, 0.16), rgba(228, 104, 63, 0.05) 55%, transparent 75%);
+  pointer-events: none;
+}
+
+/* Photos : légèrement désaturées pour une colorimétrie homogène */
+.photo {
+  filter: saturate(0.78) contrast(1.06);
+}
+
+/* Apparition au défilement */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 1.2s var(--ease),
+    transform 1.2s var(--ease);
+  transition-delay: var(--delay, 0s);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.no-js .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* évite le double espacement entre le hero d'une page et sa première section */
+.page-hero + .section,
+.subnav + .section {
+  padding-top: clamp(40px, 5vw, 80px);
+}

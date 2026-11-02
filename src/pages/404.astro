@@ -1,0 +1,26 @@
+---
+import ArrowRight from '@lucide/astro/icons/arrow-right';
+import Base from '../layouts/Base.astro';
+import { link } from '../lib/url';
+---
+
+<Base title="Page introuvable" description="Cette page n'existe pas ou a été déplacée.">
+  <section class="lost">
+    <div class="container">
+      <p class="label">Erreur 404</p>
+      <h1>Sortie de route</h1>
+      <p class="lead">Cette page n’existe pas ou a été déplacée. Reprenons la bonne direction.</p>
+      <a class="btn" href={link('/')}>Retour à l’accueil <ArrowRight aria-hidden="true" /></a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    padding-block: clamp(96px, 16vw, 220px);
+    background: radial-gradient(ellipse 50% 60% at 80% 40%, rgba(228, 104, 63, 0.1), transparent 70%), var(--ink);
+  }
+  .lead {
+    margin-bottom: 40px;
+  }
+</style>
